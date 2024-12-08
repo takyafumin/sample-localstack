@@ -8,6 +8,15 @@ CloudFormation を使って SQS + Lambda の連携を試す
 - awscli
 - awscli-local
 
+## 環境情報
+
+|    リソース    |                                         値                                          |
+| -------------- | ----------------------------------------------------------------------------------- |
+| S3 Bucket Name | sample-aws-sqs-lambda-functions                                                     |
+| S3 Bucket URI  | s3://sample-aws-sqs-lambda-functions/receiver                                       |
+| SQS Queue Name | RequestQueue                                                                        |
+| SQS URL        | http://sqs.ap-northeast-1.localhost.localstack.cloud:4566/000000000000/RequestQueue |
+
 ## 使い方
 
 ### デプロイ手順
@@ -28,17 +37,35 @@ npm run bundle
 awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/receiver
 ```
 
-3. Lambda関数をデプロイします
+3. SQSキューをデプロイします
+
+```bash
+# プロジェクトルートディレクトリで実行
+awslocal cloudformation deploy --template-file ./cloudformation/sqs.yml --stack-name SQSQueueStack --capabilities CAPABILITY_IAM
+```
+
+4. Lambda関数をデプロイします
 
 ```bash
 # プロジェクトルートディレクトリで実行
 awslocal cloudformation deploy --template-file ./cloudformation/lambda.yml --stack-name MyLambdaStack --capabilities CAPABILITY_NAMED_IAM
 ```
 
-4. Lambda関数を実行します
+5. Lambda関数を実行します
 
 ```bash
-awslocal lambda invoke --function-name MyLambdaFunction --log-type Tail output.txt | jq -r '.LogResult' | base64 --decode && rm output.txt
+payload=`echo '{"input1": 100, "input2": 200 }' | openssl base64`
+awslocal lambda invoke --function-name MyLambdaFunction --payload "$payload" --log-type Tail output.txt | jq -r '.LogResult' | base64 --decode && rm output.txt
+```
+
+- キューから実行する場合
+
+```bash
+# queue の URL 確認
+awslocal sqs list-queues
+
+# 実行
+awslocal sqs send-message --queue-url http://sqs.ap-northeast-1.localhost.localstack.cloud:4566/000000000000/RequestQueue --message-body '{"input1": 100, "input2": 200 }'
 ```
 
 ### Lambda関数の更新手順
@@ -69,6 +96,9 @@ awslocal cloudformation deploy --template-file ./cloudformation/lambda.yml --sta
 
 # Lambda の破棄
 awslocal cloudformation delete-stack --stack-name MyLambdaStack
+
+# SQS の破棄
+awslocal cloudformation delete-stack --stack-name SQSQueueStack
 
 # S3 の破棄
 awslocal cloudformation delete-stack --stack-name S3BucketStack

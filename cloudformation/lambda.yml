@@ -21,6 +21,12 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !ImportValue RequestQueueArn
 
   MyLambdaFunction:
     Type: 'AWS::Lambda::Function'
@@ -34,3 +40,10 @@ Resources:
       Runtime: nodejs20.x
       Timeout: 15
       MemorySize: 128
+
+  MySQSEventSourceMapping:
+    Type: 'AWS::Lambda::EventSourceMapping'
+    Properties:
+      BatchSize: 10
+      EventSourceArn: !ImportValue RequestQueueArn
+      FunctionName: !GetAtt MyLambdaFunction.Arn
