@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  LambdaS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: sample-aws-sqs-lambda-functions
+
+Outputs:
+  S3BucketName:
+    Value: !Ref LambdaS3Bucket
+    Export:
+      Name: LambdaS3BucketName
+  S3BucketKey:
+    Value: receiver
+    Export:
+      Name: LambdaS3BucketKeyReceiver
