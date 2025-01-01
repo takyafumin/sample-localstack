@@ -13,7 +13,8 @@
     "logs-sender": "awslocal logs tail /aws/lambda/MySenderLambdaFunction --follow",
     "logs-receiver": "awslocal logs tail /aws/lambda/MyReceiverLambdaFunction --follow",
     "bundle-sender": "cd lambdas/sender && npm install && npm run bundle && awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/sender",
-    "bundle-receiver": "cd lambdas/receiver && npm install && npm run bundle && awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/receiver"
+    "bundle-receiver": "cd lambdas/receiver && npm install && npm run bundle && awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/receiver",
+    "call-sender": "awslocal lambda invoke --function-name MySenderLambdaFunction --cli-binary-format raw-in-base64-out --payload '{\"input1\":100,\"input2\":\"test1\"}' --log-type Tail output.txt | jq -r '.LogResult' | base64 --decode && rm output.txt"
   },
   "devDependencies": {
   }
