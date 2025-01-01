@@ -6,5 +6,11 @@ import { SQSEvent, SQSHandler } from "aws-lambda";
  */
 export const handler: SQSHandler = async (event: SQSEvent) => {
     console.log('Hello, world!');
-    console.log("%o", event);
+    for (const record of event.Records) {
+        const body: any = JSON.parse(record.body);
+        console.log("Message ID: ", record.messageId);
+        console.log("Message Body: ", record.body);
+        console.log("input1: ", body.input1);
+        console.log("input2: ", body.input2);
+    }
 }

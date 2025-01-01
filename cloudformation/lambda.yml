@@ -1,6 +1,58 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
-  MyLambdaExecutionRole:
+  # ------------------------------
+  # Role for Lambda(Sender)
+  # ------------------------------
+  MySenderLambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaExecutionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !ImportValue RequestQueueArn
+
+  # ------------------------------
+  # Request -> Lambda(Sender)
+  # ------------------------------
+  MySenderLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: MySenderLambdaFunction
+      Handler: dist/index.handler
+      Role: !GetAtt MySenderLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !ImportValue LambdaS3BucketName
+        S3Key: !ImportValue LambdaS3BucketKeySender
+      Runtime: nodejs20.x
+      Timeout: 15
+      MemorySize: 128
+      Environment:
+        Variables:
+          QUEUE_URL:
+            Fn::ImportValue: RequestQueueUrl
+
+  # ------------------------------
+  # Role for Lambda(Receiver)
+  # ------------------------------
+  MyReceiverLambdaExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -28,12 +80,15 @@ Resources:
                   - sqs:GetQueueAttributes
                 Resource: !ImportValue RequestQueueArn
 
-  MyLambdaFunction:
+  # ------------------------------
+  # SQS -> Lambda(Receiver)
+  # ------------------------------
+  MyReceiverLambdaFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: MyLambdaFunction
+      FunctionName: MyReceiverLambdaFunction
       Handler: dist/index.handler
-      Role: !GetAtt MyLambdaExecutionRole.Arn
+      Role: !GetAtt MyReceiverLambdaExecutionRole.Arn
       Code:
         S3Bucket: !ImportValue LambdaS3BucketName
         S3Key: !ImportValue LambdaS3BucketKeyReceiver
@@ -41,9 +96,12 @@ Resources:
       Timeout: 15
       MemorySize: 128
 
+  # ------------------------------
+  # SQS -> Lambda(Receiver) Mapping
+  # ------------------------------
   MySQSEventSourceMapping:
     Type: 'AWS::Lambda::EventSourceMapping'
     Properties:
       BatchSize: 10
       EventSourceArn: !ImportValue RequestQueueArn
-      FunctionName: !GetAtt MyLambdaFunction.Arn
+      FunctionName: !GetAtt MyReceiverLambdaFunction.Arn

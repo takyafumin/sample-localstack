@@ -1,0 +1,20 @@
+{
+  "name": "sample-aws-cloudformation-sqs-lambda",
+  "version": "1.0.0",
+  "scripts": {
+    "s3-deploy": "awslocal cloudformation deploy --template-file cloudformation/s3.yml --stack-name my-s3-bucket-stack",
+    "s3-ls": "awslocal s3 ls",
+    "sqs-deploy": "awslocal cloudformation deploy --template-file ./cloudformation/sqs.yml --stack-name SQSQueueStack --capabilities CAPABILITY_IAM",
+    "sqs-ls": "awslocal sqs list-queues",
+    "sqs-msg": "awslocal sqs receive-message --queue-url http://sqs.ap-northeast-1.localhost.localstack.cloud:4566/000000000000/RequestQueue",
+    "lambda-deploy": "awslocal cloudformation deploy --template-file ./cloudformation/lambda.yml --stack-name MyLambdaStack --capabilities CAPABILITY_NAMED_IAM",
+    "lambda-redeploy": "npm run bundle-sender && npm run bundle-receiver && npm run lambda-deploy",
+    "lambda-ls": "awslocal lambda list-functions",
+    "logs-sender": "awslocal logs tail /aws/lambda/MySenderLambdaFunction --follow",
+    "logs-receiver": "awslocal logs tail /aws/lambda/MyReceiverLambdaFunction --follow",
+    "bundle-sender": "cd lambdas/sender && npm install && npm run bundle && awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/sender",
+    "bundle-receiver": "cd lambdas/receiver && npm install && npm run bundle && awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/receiver"
+  },
+  "devDependencies": {
+  }
+}

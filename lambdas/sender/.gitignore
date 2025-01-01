@@ -1,0 +1,14 @@
+# Node.js
+node_modules/
+dist/
+*.log
+*.zip
+
+# TypeScript
+*.tsbuildinfo
+
+# Local environment files
+.env
+
+# Output files
+output.txt

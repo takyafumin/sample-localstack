@@ -20,7 +20,7 @@ Resources:
             Resource: !GetAtt RequestQueue.Arn
 
 Outputs:
-  RequestQueueArn:
-    Value: !GetAtt RequestQueue.Arn
+  RequestQueueUrl:
+    Value: !Ref RequestQueue
     Export:
-      Name: RequestQueueArn
+      Name: RequestQueueUrl
