@@ -105,3 +105,13 @@ Resources:
       BatchSize: 10
       EventSourceArn: !ImportValue RequestQueueArn
       FunctionName: !GetAtt MyReceiverLambdaFunction.Arn
+
+Outputs:
+  MySenderLambdaFunctionArn:
+    Value: !GetAtt MySenderLambdaFunction.Arn
+    Export:
+      Name: MySenderLambdaFunctionArn
+  MySenderLambdaFunctionName:
+    Value: !Ref MySenderLambdaFunction
+    Export:
+      Name: MySenderLambdaFunctionName

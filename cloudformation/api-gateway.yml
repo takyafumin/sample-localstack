@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  Api:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: 'MyApiGateway'
+      Description: 'API Gateway for Lambda integration'
+
+  Resource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: 'sender'
+      RestApiId: !Ref Api
+
+  LambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !ImportValue MySenderLambdaFunctionName
+      Action: 'lambda:InvokeFunction'
+      Principal: 'apigateway.amazonaws.com'
+    DependsOn: Resource
+
+  ResourceMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId: !Ref Resource
+      RestApiId: !Ref Api
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri: !Join
+          - ''
+          - - 'arn:aws:apigateway:'
+            - !Ref AWS::Region
+            - ':lambda:path/2015-03-31/functions/'
+            - Fn::ImportValue: MySenderLambdaFunctionArn
+            - '/invocations'
+    DependsOn: 'LambdaPermission'
+
+  DeploymentProd:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref Api
+      StageName: 'prod'
+    DependsOn: ResourceMethod
+
+  DeploymentDev:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref Api
+      StageName: 'dev'
+    DependsOn: ResourceMethod
+
+Outputs:
+  ApiGatewayUrlProd:
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/prod/myresource
+    Export:
+      Name: ApiGatewayUrlProd
+
+  ApiGatewayUrlDev:
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/dev/myresource
+    Export:
+      Name: ApiGatewayUrlDev

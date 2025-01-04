@@ -57,6 +57,19 @@ awslocal cloudformation deploy --template-file ./cloudformation/sqs.yml --stack-
 awslocal cloudformation deploy --template-file ./cloudformation/lambda.yml --stack-name MyLambdaStack --capabilities CAPABILITY_NAMED_IAM
 ```
 
+5. API GatewayのCloudFormationテンプレートをデプロイします
+
+```bash
+# プロジェクトルートディレクトリで実行
+aws cloudformation deploy --template-file ./cloudformation/api-gateway.yaml --stack-name api-gateway-stack
+```
+
+6. デプロイが完了したら、API GatewayのURLを確認します
+
+```bash
+aws cloudformation describe-stacks --stack-name api-gateway-stack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text
+```
+
 ### 実行方法(bash)
 
 - sender の Lambda 関数を実行する
@@ -80,7 +93,7 @@ awslocal lambda invoke --function-name MySenderLambdaFunction --cli-binary-forma
 
 ### Lambda関数の更新手順
 
-1. コードをビルドしてzipにします。
+1. コードをビルドしてzipにします
 
 ```bash
 cd lambdas/receiver
@@ -90,14 +103,14 @@ cd lambdas/sender
 npm run bundle
 ```
 
-2. Lambda関数のコードをS3バケットに再アップロードします。
+2. Lambda関数のコードをS3バケットに再アップロードします
 
 ```bash
 awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/sender
 awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/receiver
 ```
 
-3. Lambda関数を再デプロイします。
+3. Lambda関数を再デプロイします
 
 ```bash
 awslocal cloudformation deploy --template-file ./cloudformation/lambda.yml --stack-name MyLambdaStack --capabilities CAPABILITY_NAMED_IAM

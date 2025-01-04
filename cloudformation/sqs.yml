@@ -24,3 +24,7 @@ Outputs:
     Value: !Ref RequestQueue
     Export:
       Name: RequestQueueUrl
+  RequestQueueArn:
+    Value: !GetAtt RequestQueue.Arn
+    Export:
+      Name: RequestQueueArn

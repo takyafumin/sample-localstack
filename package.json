@@ -2,19 +2,25 @@
   "name": "sample-aws-cloudformation-sqs-lambda",
   "version": "1.0.0",
   "scripts": {
-    "s3-deploy": "awslocal cloudformation deploy --template-file cloudformation/s3.yml --stack-name my-s3-bucket-stack",
+    "deploy-all": "npm run deploy-s3 && npm run deploy-sqs && npm run redeploy-lambda && npm run deploy-api",
+    "deploy-s3": "awslocal cloudformation deploy --template-file cloudformation/s3.yml --stack-name my-s3-bucket-stack",
+    "deploy-sqs": "awslocal cloudformation deploy --template-file ./cloudformation/sqs.yml --stack-name my-sqs-stack --capabilities CAPABILITY_IAM",
+    "deploy-lambda": "awslocal cloudformation deploy --template-file ./cloudformation/lambda.yml --stack-name my-lambda-stack --capabilities CAPABILITY_NAMED_IAM",
+    "redeploy-lambda": "npm run bundle-sender && npm run bundle-receiver && npm run deploy-lambda",
+    "deploy-api": "awslocal cloudformation deploy --template-file ./cloudformation/api-gateway.yml --stack-name api-gateway-stack",
     "s3-ls": "awslocal s3 ls",
-    "sqs-deploy": "awslocal cloudformation deploy --template-file ./cloudformation/sqs.yml --stack-name SQSQueueStack --capabilities CAPABILITY_IAM",
     "sqs-ls": "awslocal sqs list-queues",
     "sqs-msg": "awslocal sqs receive-message --queue-url http://sqs.ap-northeast-1.localhost.localstack.cloud:4566/000000000000/RequestQueue",
-    "lambda-deploy": "awslocal cloudformation deploy --template-file ./cloudformation/lambda.yml --stack-name MyLambdaStack --capabilities CAPABILITY_NAMED_IAM",
-    "lambda-redeploy": "npm run bundle-sender && npm run bundle-receiver && npm run lambda-deploy",
     "lambda-ls": "awslocal lambda list-functions",
     "logs-sender": "awslocal logs tail /aws/lambda/MySenderLambdaFunction --follow",
     "logs-receiver": "awslocal logs tail /aws/lambda/MyReceiverLambdaFunction --follow",
     "bundle-sender": "cd lambdas/sender && npm install && npm run bundle && awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/sender",
     "bundle-receiver": "cd lambdas/receiver && npm install && npm run bundle && awslocal s3 cp index.zip s3://sample-aws-sqs-lambda-functions/receiver",
-    "call-sender": "awslocal lambda invoke --function-name MySenderLambdaFunction --cli-binary-format raw-in-base64-out --payload '{\"input1\":100,\"input2\":\"test1\"}' --log-type Tail output.txt | jq -r '.LogResult' | base64 --decode && rm output.txt"
+    "call-sender": "awslocal lambda invoke --function-name MySenderLambdaFunction --cli-binary-format raw-in-base64-out --payload '{\"input1\":100,\"input2\":\"test1\"}' --log-type Tail output.txt | jq -r '.LogResult' | base64 --decode && rm output.txt",
+    "delete-api": "awslocal cloudformation delete-stack --stack-name api-gateway-stack",
+    "delete-lambda": "awslocal cloudformation delete-stack --stack-name my-lambda-stack",
+    "delete-sqs": "awslocal cloudformation delete-stack --stack-name my-sqs-stack",
+    "delete-s3": "awslocal cloudformation delete-stack --stack-name my-s3-bucket-stack"
   },
   "devDependencies": {
   }
