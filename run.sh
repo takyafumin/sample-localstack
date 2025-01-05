@@ -75,6 +75,33 @@ delete_stacks() {
 }
 
 # ----------------------------------------
+# Lambdaリソースを更新する関数
+# ----------------------------------------
+update_lambda_resources() {
+  # Lambda関数のビルドとパッケージング
+  echo "Building and packaging Lambda functions..."
+  npm run build-sender
+  npm run build-receiver
+
+  # Lambda関数をS3にアップロード
+  echo "Uploading Lambda functions to S3..."
+  aws s3 cp lambdas/sender/index.zip s3://$S3_BUCKET_NAME/sender/index.zip
+  aws s3 cp lambdas/receiver/index.zip s3://$S3_BUCKET_NAME/receiver/index.zip
+
+  # スタックを更新
+  echo "Updating parent stack..."
+  aws cloudformation deploy --template-file $ROOT_DIR/cloudformation/template.yml \
+    --stack-name $PARENT_STACK_NAME \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --parameter-overrides \
+        LambdaS3BucketName=$S3_BUCKET_NAME \
+        LambdaS3BucketKeySender=sender/index.zip \
+        LambdaS3BucketKeyReceiver=receiver/index.zip
+
+  echo "Lambda resources update complete."
+}
+
+# ----------------------------------------
 # 動作確認のための関数
 # ----------------------------------------
 test_stacks() {
@@ -103,8 +130,11 @@ case "$1" in
   test)
     test_stacks
     ;;
+  update-lambda)
+    update_lambda_resources
+    ;;
   *)
-    echo "Usage: $0 {init|rm|test}"
+    echo "Usage: $0 {init|rm|test|update-lambda}"
     exit 1
     ;;
 esac
