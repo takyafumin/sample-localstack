@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
-  S3BucketName:
-    Type: String
-    Description: "The name of the S3 bucket"
+  # S3BucketName:
+  #   Type: String
+  #   Description: "The name of the S3 bucket"
   LambdaS3BucketName:
     Type: String
     Description: "The name of the S3 bucket for Lambda functions"
@@ -14,27 +14,26 @@ Parameters:
     Description: "The S3 key for the receiver Lambda function"
 
 Resources:
-  S3Stack:
-    Type: 'AWS::CloudFormation::Stack'
-    Properties:
-      TemplateURL: !Sub
-        - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/s3.yml'
-        - BucketName: !ImportValue S3BucketNameCFn
+  # S3Stack:
+  #   Type: 'AWS::CloudFormation::Stack'
+  #   Properties:
+  #     TemplateURL: !Sub
+  #       - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/s3.yml'
+  #       - BucketName: !ImportValue S3BucketNameCFn
 
   SQSStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       TemplateURL: !Sub
-        - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/sqs.yml'
-        - BucketName: !ImportValue S3BucketNameCFn
-    DependsOn: S3Stack
+        - 'https://${S3BucketName}.s3.amazonaws.com/cloudformation/resources/sqs.yml'
+        - S3BucketName: !ImportValue S3BucketNameCFn
 
   LambdaStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       TemplateURL: !Sub
-        - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/lambda.yml'
-        - BucketName: !ImportValue S3BucketNameCFn
+        - 'https://${S3BucketNameCFn}.s3.amazonaws.com/cloudformation/resources/lambda.yml'
+        - S3BucketNameCFn: !ImportValue S3BucketNameCFn
       Parameters:
         LambdaS3BucketName: !Ref LambdaS3BucketName
         LambdaS3BucketKeySender: !Ref LambdaS3BucketKeySender
@@ -45,12 +44,12 @@ Resources:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       TemplateURL: !Sub
-        - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/api-gateway.yml'
-        - BucketName: !ImportValue S3BucketNameCFn
+        - 'https://${S3BucketNameCFn}.s3.amazonaws.com/cloudformation/resources/api-gateway.yml'
+        - S3BucketNameCFn: !ImportValue S3BucketNameCFn
     DependsOn: LambdaStack
 
 Outputs:
-  S3BucketName:
+  S3BucketNameCFn:
     Value: !ImportValue S3BucketNameCFn
   RequestQueueUrl:
     Value: !GetAtt SQSStack.Outputs.RequestQueueUrl
