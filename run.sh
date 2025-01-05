@@ -22,8 +22,6 @@ deploy_stacks() {
     --parameter-overrides BucketName=$S3_BUCKET_NAME \
     --capabilities CAPABILITY_NAMED_IAM
 
-  # S3_BUCKET_NAME=$(get_s3_bucket_name)
-
   # Lambda関数のビルドとパッケージング
   echo "Building and packaging Lambda functions..."
   npm run build-sender
