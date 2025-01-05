@@ -1,6 +1,6 @@
 # sample-aws-cloudformation-sqs-lambda
 
-CloudFormation を使って SQS + Lambda の連携を試す
+CloudFormation を使って API Gateway + Lambda + SQS の連携を試す
 
 ## 必要なもの
 
@@ -8,13 +8,23 @@ CloudFormation を使って SQS + Lambda の連携を試す
 
 ## 環境情報
 
-|    リソース    |                                         値                                          |
-| -------------- | ----------------------------------------------------------------------------------- |
-| S3 Bucket Name | sample-aws-sqs-lambda-functions                                                     |
-| S3 Bucket URI  | s3://sample-aws-sqs-lambda-functions/sender                                         |
-| S3 Bucket URI  | s3://sample-aws-sqs-lambda-functions/receiver                                       |
-| SQS Queue Name | RequestQueue                                                                        |
-| SQS URL        | http://sqs.ap-northeast-1.localhost.localstack.cloud:4566/000000000000/RequestQueue |
+|    リソース     |                    値                    |                          説明                          |
+| --------------- | ---------------------------------------- | ------------------------------------------------------ |
+| S3 Bucket       | sample-aws-sqs-lambda-functions-template | Cloudformation, Lambda関数を格納するためのS3バケット名 |
+| SQS             | RequestQueue                             | リクエストを受け取るためのキュー                       |
+| Lambda Function | MySenderLambdaFunction                   | リクエストを送信するLambda関数                         |
+| Lambda Function | MyReceiverLambdaFunction                 | リクエストを受信するLambda関数                         |
+| API Gateway     | -                                        | LambdaのエントリポイントAPI                            |
+
+## 構成図
+
+```mermaid
+graph TD;
+    A[API Gateway] --> B[MySenderLambdaFunction];
+    B --> C[RequestQueue];
+    C --> D[MyReceiverLambdaFunction];
+    D --> E[S3 Bucket];
+```
 
 ## 使い方
 
