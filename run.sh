@@ -52,6 +52,10 @@ delete_stacks() {
   aws cloudformation delete-stack --stack-name ParentStack
   aws cloudformation wait stack-delete-complete --stack-name ParentStack
 
+  echo "Deleting S3 bucket contents..."
+  S3_BUCKET_NAME=$(get_s3_bucket_name)
+  aws s3 rm s3://$S3_BUCKET_NAME --recursive
+
   aws cloudformation delete-stack --stack-name S3BucketCFnStack
   aws cloudformation wait stack-delete-complete --stack-name S3BucketCFnStack
 
