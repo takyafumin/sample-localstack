@@ -56,11 +56,11 @@ Resources:
 
 Outputs:
   ApiGatewayUrlProd:
-    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/prod/myresource
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/prod/sender
     Export:
       Name: ApiGatewayUrlProd
 
   ApiGatewayUrlDev:
-    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/dev/myresource
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/dev/sender
     Export:
       Name: ApiGatewayUrlDev

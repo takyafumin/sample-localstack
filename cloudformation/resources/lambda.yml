@@ -1,4 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  LambdaS3BucketName:
+    Type: String
+    Description: "The name of the S3 bucket for Lambda functions"
+  LambdaS3BucketKeySender:
+    Type: String
+    Description: "The S3 key for the sender Lambda function"
+  LambdaS3BucketKeyReceiver:
+    Type: String
+    Description: "The S3 key for the receiver Lambda function"
+
 Resources:
   # ------------------------------
   # Role for Lambda(Sender)
@@ -39,8 +50,8 @@ Resources:
       Handler: dist/index.handler
       Role: !GetAtt MySenderLambdaExecutionRole.Arn
       Code:
-        S3Bucket: !ImportValue LambdaS3BucketName
-        S3Key: !ImportValue LambdaS3BucketKeySender
+        S3Bucket: !Ref LambdaS3BucketName
+        S3Key: !Ref LambdaS3BucketKeySender
       Runtime: nodejs20.x
       Timeout: 15
       MemorySize: 128
@@ -90,8 +101,8 @@ Resources:
       Handler: dist/index.handler
       Role: !GetAtt MyReceiverLambdaExecutionRole.Arn
       Code:
-        S3Bucket: !ImportValue LambdaS3BucketName
-        S3Key: !ImportValue LambdaS3BucketKeyReceiver
+        S3Bucket: !Ref LambdaS3BucketName
+        S3Key: !Ref LambdaS3BucketKeyReceiver
       Runtime: nodejs20.x
       Timeout: 15
       MemorySize: 128

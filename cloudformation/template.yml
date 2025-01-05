@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: "The name of the S3 bucket"
+  LambdaS3BucketName:
+    Type: String
+    Description: "The name of the S3 bucket for Lambda functions"
+  LambdaS3BucketKeySender:
+    Type: String
+    Description: "The S3 key for the sender Lambda function"
+  LambdaS3BucketKeyReceiver:
+    Type: String
+    Description: "The S3 key for the receiver Lambda function"
+
+Resources:
+  S3Stack:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/s3.yml'
+        - BucketName: !ImportValue S3BucketNameCFn
+
+  SQSStack:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/sqs.yml'
+        - BucketName: !ImportValue S3BucketNameCFn
+    DependsOn: S3Stack
+
+  LambdaStack:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/lambda.yml'
+        - BucketName: !ImportValue S3BucketNameCFn
+      Parameters:
+        LambdaS3BucketName: !Ref LambdaS3BucketName
+        LambdaS3BucketKeySender: !Ref LambdaS3BucketKeySender
+        LambdaS3BucketKeyReceiver: !Ref LambdaS3BucketKeyReceiver
+    DependsOn: SQSStack
+
+  ApiGatewayStack:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub
+        - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/api-gateway.yml'
+        - BucketName: !ImportValue S3BucketNameCFn
+    DependsOn: LambdaStack
+
+Outputs:
+  S3BucketName:
+    Value: !ImportValue S3BucketNameCFn
+  RequestQueueUrl:
+    Value: !GetAtt SQSStack.Outputs.RequestQueueUrl
+  RequestQueueArn:
+    Value: !GetAtt SQSStack.Outputs.RequestQueueArn
+  MySenderLambdaFunctionArn:
+    Value: !GetAtt LambdaStack.Outputs.MySenderLambdaFunctionArn
+  MySenderLambdaFunctionName:
+    Value: !GetAtt LambdaStack.Outputs.MySenderLambdaFunctionName
+  ApiGatewayUrlProd:
+    Value: !GetAtt ApiGatewayStack.Outputs.ApiGatewayUrlProd
+  ApiGatewayUrlDev:
+    Value: !GetAtt ApiGatewayStack.Outputs.ApiGatewayUrlDev
