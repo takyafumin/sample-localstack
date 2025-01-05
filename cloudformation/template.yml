@@ -1,8 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
-  # S3BucketName:
-  #   Type: String
-  #   Description: "The name of the S3 bucket"
   LambdaS3BucketName:
     Type: String
     Description: "The name of the S3 bucket for Lambda functions"
@@ -14,13 +11,6 @@ Parameters:
     Description: "The S3 key for the receiver Lambda function"
 
 Resources:
-  # S3Stack:
-  #   Type: 'AWS::CloudFormation::Stack'
-  #   Properties:
-  #     TemplateURL: !Sub
-  #       - 'https://${BucketName}.s3.amazonaws.com/cloudformation/resources/s3.yml'
-  #       - BucketName: !ImportValue S3BucketNameCFn
-
   SQSStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:

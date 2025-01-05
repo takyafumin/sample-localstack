@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build-sender": "cd lambdas/sender && npm install && npm run bundle",
-    "build-receiver": "cd lambdas/receiver && npm install && npm run bundle",
-    "upload-sender": "aws s3 cp lambdas/sender/index.zip s3://sample-aws-sqs-lambda-functions-template/sender/index.zip",
-    "upload-receiver": "aws s3 cp lambdas/receiver/index.zip s3://sample-aws-sqs-lambda-functions-template/receiver/index.zip"
+    "build-receiver": "cd lambdas/receiver && npm install && npm run bundle"
   },
   "devDependencies": {}
 }
